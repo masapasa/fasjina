@@ -1,7 +1,7 @@
 # indexing data
-DATA_DIR = "../data/images" # Where are the files?
-CSV_FILE = "../data/styles.csv" # Where's the metadata?
-MAX_DOCS = 100
+DATA_DIR = "/home/aswin/data/archive/images/" # Where are the files?
+CSV_FILE = "/home/aswin/data/archive/styles.csv" # Where's the metadata?
+MAX_DOCS = 11
 WORKSPACE_DIR = "workspace"
 DEVICE = "cpu"
 
