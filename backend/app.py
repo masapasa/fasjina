@@ -2,13 +2,13 @@ from jina import Flow, Client
 # from executor import FashionSearchPreprocessor
 from docarray import DocumentArray, Document
 from helper import process_docs, print_results
-from config import MAX_DOCS, CSV_FILE, CLOUD_HOST, WORKSPACE_DIR
+from config import MAX_DOCS, CSV_FILE, WORKSPACE_DIR
 import click
 
 # flow = Flow.load_config("flow.yml")
 
 flow = (
-    Flow(port=12345)
+    Flow(port=12346)
     .add(
         uses="jinahub://FashionSearchPreprocessor/v0.6",
         uses_with={
@@ -102,9 +102,9 @@ def main(task: str, num_docs):
     if task == "index":
         index(CSV_FILE, num_docs=num_docs)
     elif task == "cloud_index":
-        cloud_index(host=CLOUD_HOST, csv_file=CSV_FILE, num_docs=num_docs)
+        cloud_index(csv_file=CSV_FILE, num_docs=num_docs)
     elif task == "cloud_search":
-        cloud_search(host=CLOUD_HOST)
+        cloud_search()
     elif task == "serve":
         serve()
     else:
