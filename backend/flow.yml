@@ -5,8 +5,6 @@ with:
 executors:
   - name: preprocessor
     uses: jinahub://FashionSearchPreprocessor/v0.4
-    uses_with:
-      data_dir: ../data/images
     install_requirements: true
   - name: encoder
     uses: jinahub://CLIPEncoder
