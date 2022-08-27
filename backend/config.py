@@ -1,26 +1,21 @@
 # indexing data
-DATA_DIR = "/home/aswin/data/archive/images/" # Where are the files?
-CSV_FILE = "/home/aswin/data/archive/styles.csv" # Where's the metadata?
-MAX_DOCS = 11
-WORKSPACE_DIR = "workspace"
+DOCARRAY_PULL_NAME = 'fashion-multimodal-all'
+DATA_DIR = "../data/images" # Where are the files?
+CSV_FILE = "../data/styles.csv" # Where's the metadata?
+WORKSPACE_DIR = "../embeddings"
+MAX_DOCS = 99999999
 DEVICE = "cpu"
 
 # PQLiteIndexer
-COLUMNS = [
-    ("gender", "str"),
-    ("masterCategory", "str"),
-    ("subCategory", "str"),
-    ("articleType", "str"),
-    ("baseColour", "str"),
-    ("season", "str"),
-    ("usage", "str"),
-    ("year", "int"),
-]
 DIMS = 512 # This should be same shape as vector embedding
 
-# searching via gRPC
-search_terms = ("Dress", "Shirt", "Shoe")
-
 # serving via REST
-SERVER = "0.0.0.0" # remove http://
+HOST = "http://0.0.0.0"
 PORT = 12345
+
+# metas for executors
+TIMEOUT_READY = -1 # Wait forever for executor to be ready. Good for slow connections
+
+# cloud
+CLOUD_HOST = "https://0df596d980.wolf.jina.ai"
+IMAGE_ROOT_URL = "https://examples.jina.ai/data/fashion/images/" # where are the image files?

@@ -1,93 +1,67 @@
-from jina import Flow
-from helper import input_docs_from_csv, get_columns
-from config import DEVICE, MAX_DOCS, WORKSPACE_DIR, PORT, CSV_FILE, DIMS
+from jina import Flow, Client
+from docarray import DocumentArray, Document
+from helper import process_docs, print_results
+from config import MAX_DOCS, CSV_FILE, CLOUD_HOST
 import click
-import pickle
-import sys
 
-def index(csv_file=CSV_FILE, max_docs=MAX_DOCS):
-    docs = input_docs_from_csv(file_path=csv_file, max_docs=max_docs)
-
-    columns = get_columns(docs[0]) # Get all the column info from first doc
-    pickle.dump(columns, open("columns.p", "wb")) # Pickle values so search fn can pick up later
-
-    flow_index = (
-        Flow()
-        .add(
-            uses="jinahub://DocCache", 
-            name="deduplicator",
-            install_requirements=True
-        )
-        .add(
-            uses="jinahub://CLIPImageEncoder",
-            name="image_encoder",
-            uses_with={"device": DEVICE},
-            install_requirements=True
-        )
-        .add(
-            uses="jinahub://PQLiteIndexer",
-            name="indexer",
-            uses_with={
-                'dim': DIMS,
-                'columns': columns,
-                # 'columns': COLUMNS,
-                'metric': "cosine",
-                'include_metadata': True
-            },
-            uses_metas={"workspace": WORKSPACE_DIR},
-            volumes=f"./{WORKSPACE_DIR}:/workspace/workspace",
-            install_requirements=True
-        )
-    )
-
-    with flow_index:
-        flow_index.index(inputs=docs, show_progress=True)
+flow = Flow.load_config("flow.yml")
 
 
-def search():
-    columns = pickle.load(open("columns.p", "rb"))
-    flow_search = (
-        Flow()
-        .add(
-            uses="jinahub://CLIPTextEncoder",
-            name="text_encoder",
-            uses_with={"device": DEVICE},
-            install_requirements=True,
-        )
-        .add(
-            uses="jinahub://PQLiteIndexer",
-            name="indexer",
-            uses_with={
-                'dim': DIMS,
-                'columns': columns,
-                'metric': "cosine",
-                'include_metadata': True
-            },
-            uses_metas={"workspace": WORKSPACE_DIR},
-            volumes=f"./{WORKSPACE_DIR}:/workspace/workspace",
-            install_requirements=True
-        )
-    )
+def index(csv_file, num_docs):
+    print(f"Indexing {num_docs} documents")
+    docs = DocumentArray.from_csv(csv_file, size=num_docs)
 
-    with flow_search:
-        flow_search.port_expose = PORT
-        flow_search.cors = True
-        flow_search.protocol = "http"
-        flow_search.block()
+    with flow:
+        docs = flow.index(inputs=docs, show_progress=True, return_results=True)
+
+    print_results(docs, show_matches=False)
+
+
+def cloud_index(host, csv_file, num_docs):
+    client = Client(host=host)
+    docs = DocumentArray.from_csv(csv_file, size=num_docs)
+    process_docs(docs)
+    client.post("/update", docs, show_progress=True)
+
+
+def cloud_search(host):
+    query = input("What do you want to search? ")
+    client = Client(host=host)
+    doc = Document(text=query)
+
+    response = client.search(doc, show_progress=True)
+
+    print_results(response)
+
+
+def serve():
+    """
+    Open RESTful front-end for searching or indexing
+    """
+    with flow:
+        flow.block()
 
 
 @click.command()
 @click.option(
     "--task",
     "-t",
-    type=click.Choice(["index", "search"], case_sensitive=False),
+    type=click.Choice(
+        ["index", "serve", "cloud_index", "cloud_search"], case_sensitive=False
+    ),
 )
 @click.option("--num_docs", "-n", default=MAX_DOCS)
-def main(task: str, num_docs: int):
+def main(task: str, num_docs):
     if task == "index":
-        index(csv_file=CSV_FILE, max_docs=num_docs)
-    elif task == "search":
-        search()
+        index(CSV_FILE, num_docs=num_docs)
+    elif task == "cloud_index":
+        cloud_index(host=CLOUD_HOST, csv_file=CSV_FILE, num_docs=num_docs)
+    elif task == "cloud_search":
+        cloud_search(host=CLOUD_HOST)
+    elif task == "serve":
+        serve()
+    else:
+        print("Please add '-t index' or '-t serve' to your command")
 
 
 if __name__ == "__main__":

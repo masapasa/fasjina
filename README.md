@@ -1,46 +1,67 @@
 # Multimodal Fashion Search with Jina
 
-![](./demo.gif)
+![](./.github/images/demo.gif)
 
 Multimodal search lets you use one type of data (in this case, text) to search another type of data (in this case, images). This example leverages core Jina technologies that make it simpler to build and run your search, including:
 
-- Executors from [Jina Hub](https://hub.jina.ai), so we don't have to manually integrate deep learning models
-- [Jina Client](https://docs.jina.ai/api/jina.clients/), so we don't have to worry about how best to format the REST request
+- **[DocumentArray](https://docarray.jina.ai)** - let's us concurrently process Documents and push/pull them between machines. Useful for creating embeddings on remote machine with GPU and then indexing and querying locally
+- **[Jina Hub](https://hub.jina.ai)** Executors, so we don't have to manually integrate deep learning models
+- **[Jina Client](https://docs.jina.ai/api/jina.clients/)**, so we don't have to worry about how best to format the REST request
+- **[PQLite](https://hub.jina.ai/executor/pn1qofsj)** allowing us to pre-filter results by season, price, rating, etc
 
-## Instructions
+The front-end is built in [Streamlit](https://streamlit.io/).
 
-### Download data
+## Play with the search engine now
 
-1. Download dataset from [Kaggle](https://www.kaggle.com/paramaggarwal/fashion-product-images-small) and extract
-2. Create a directory called `data`
-3. Ensure your `data` directory looks like:
+We've got a [live demo](https://examples.jina.ai/fashion) for you to play with.
 
-```data
-├── images
-└── styles.csv
+## Run the fashion search engine yourself
+
+There are multiple ways you can run this:
+
+- Deploy on [JCloud](https://github.com/jina-ai/jcloud/)
+- Run with Docker-Compose
+- Run on bare metal
+
+### First steps
+
+- **Clone this repo**: `git clone https://github.com/jina-ai/example-multimodal-fashion-search.git`
+- **Download data**: `python ./get_data.py`
+
+### Run on JCloud
+
+JCloud lets you run the fashion backend Jina Flow on the cloud, without having to use your own compute.
+
+```sh
+pip install jcloud
+cd backend
+jc login
+jc deploy jcloud
 ```
 
-### Run backend
+After that you can use [Jina Client](https://docs.jina.ai/fundamentals/flow/client/#connect-client-to-a-flow) to connect and search/index your data.
 
-1. `cd backend`
-2. `pip install -r requirements.txt`
-3. `python app.py -t index -n 10` (where `10` is the number of files you want to index)
-4. `python app.py -t search`
+### Run with Docker-Compose
 
-### Run frontend
+This will spin up both the backend and front-end. Note: You will have to index data before you can search for it.
 
-1. Open a new terminal window/tab, return to same directory
-2. `cd frontend`
-3. `pip install -r requirements.txt`
-4. `streamlit run frontend.py`
+```sh
+docker-compose up
+```
 
-## With Docker-compose
+### Run on bare metal
 
-`docker-compose up`
+```sh
+pip install -r requirements.txt
+```
 
-## TODO
+Then, in `backend`:
 
-- [X] Streamlit frontend
-- [X] Separate indexing and querying
-- [X] Index more by default
-- [ ] Switch out to higher-res dataset for nicer pics
+- **Build your index**: `python app.py -t index -n 1000 # index 1000 images`
+- **Open up RESTful interface for searching/indexing**: `python app.py -t serve`
+
+To open the frontend, go to the `frontend` directory and run `streamlit run frontend.py`
+
+## Tips
+
+- Index using the [small dataset](https://www.kaggle.com/paramaggarwal/fashion-product-images-small), then swap out the data directory for that of the [hi-res dataset](https://www.kaggle.com/paramaggarwal/fashion-product-images-dataset) for nicer-looking results.
