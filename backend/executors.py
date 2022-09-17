@@ -85,7 +85,7 @@ class FashionSearchPreprocessor(Executor):
         # doc.set_image_tensor_shape(shape=self.tensor_shape)
         # doc.set_image_tensor_normalization()
 
-        # doc.convert_uri_to_datauri()
+        # doc.convert_uri_to_datauri()y
         # return doc
 
 
