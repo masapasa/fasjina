@@ -41,7 +41,7 @@ def print_stars(rating, maximum=5):
 
 
 class facets:
-    gender = ["Men", "Women"]
+    gender = ["Ethereum", "Poygon"]
     season = ["Summer", "Spring", "Fall", "Winter"]
     color = [
         "Beige",

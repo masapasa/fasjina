@@ -1,6 +1,6 @@
 jtype: Flow
 with:
-  protocol: http
+  protocol: grpc
   #port: 12345
 executors:
   - name: preprocessor
